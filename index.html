@@ -1,0 +1,132 @@
+<body></body>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+const marked = window.marked;
+class Markdown {
+  constructor(url) {
+    this.page = new Pagenation();
+    this.url = url;
+    this.update();
+  }
+
+  async update() {
+    const text = await this.fetch();
+    const htmls = text
+      .replace(/[^#]# /g, "__split__# ")
+      .split("__split__")
+      .map(s => marked(s));
+    this.write(htmls);
+  }
+
+  async fetch() {
+    const response = await fetch(this.url);
+    return await response.text();
+  }
+
+  write(htmls) {
+    this.page.setHtmls(htmls);
+  }
+
+  setUrl(url) {
+    this.url = url;
+    this.update();
+  }
+}
+class Pagenation {
+  constructor(htmls) {
+    this.el = document.createElement("div");
+    this.el.style.display = "grid";
+    this.el.style.gridTemplateAreas = '"body body body" "prev counter next"';
+    this.page = 0;
+    this.htmls = [];
+    document.body.appendChild(this.el);
+    this.initHtml();
+    this.setHtmls(htmls);
+  }
+
+  initHtml() {
+    this.initBody();
+    this.initPrev();
+    this.initNext();
+    this.initCounter();
+  }
+
+  initBody() {
+    this.body = document.createElement("div");
+    this.body.style.gridArea = "body";
+    this.el.appendChild(this.body);
+  }
+
+  initNext() {
+    this.next = document.createElement("button");
+    this.next.style.gridArea = "next";
+    this.next.innerText = ">";
+    this.el.appendChild(this.next);
+    this.next.addEventListener("click", () => this.showNext());
+  }
+
+  initPrev() {
+    this.prev = document.createElement("button");
+    this.prev.style.gridArea = "prev";
+    this.prev.innerText = "<";
+    this.el.appendChild(this.prev);
+    this.prev.addEventListener("click", () => this.showPrev());
+  }
+
+  initCounter() {
+    this.counter = document.createElement("span");
+    this.counter.style.gridArea = "counter";
+    this.counter.style.textAlign = "center";
+    this.el.appendChild(this.counter);
+  }
+
+  getCounterText() {
+    return `${this.page + 1}/${this.htmls.length}`;
+  }
+
+  hasNext() {
+    return this.htmls.length > this.page + 1;
+  }
+
+  hasPrev() {
+    return this.page > 0;
+  }
+
+  showNext() {
+    if (this.hasNext()) {
+      this.page++;
+      this.update();
+    }
+  }
+
+  showPrev() {
+    if (this.hasPrev()) {
+      this.page--;
+      this.update();
+    }
+  }
+
+  update() {
+    this.next.disabled = !this.hasNext();
+    this.prev.disabled = !this.hasPrev();
+    this.counter.innerText = this.getCounterText();
+    if (this.htmls.length > 0) {
+      this.body.innerHTML = this.htmls[this.page];
+    }
+  }
+
+  setHtmls(htmls) {
+    this.htmls = htmls || [];
+    this.update();
+  }
+}
+
+const md = new Markdown("/docs/example.md");
+const ws = new WebSocket("ws://localhost:8081");
+ws.addEventListener("open", () => {
+  ws.send("/docs/example.md");
+});
+ws.addEventListener("message", () => {
+  md.update();
+});
+</script>
