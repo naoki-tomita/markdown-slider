@@ -121,12 +121,10 @@ class Pagenation {
   }
 }
 
-const md = new Markdown("/docs/example.md");
+const FILE_PATH = "/docs/example.md";
+
+const md = new Markdown(FILE_PATH);
 const ws = new WebSocket("ws://localhost:8081");
-ws.addEventListener("open", () => {
-  ws.send("/docs/example.md");
-});
-ws.addEventListener("message", () => {
-  md.update();
-});
+ws.addEventListener("open", () => ws.send(FILE_PATH));
+ws.addEventListener("message", () => md.update());
 </script>
