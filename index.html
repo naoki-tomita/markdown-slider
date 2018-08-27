@@ -36,7 +36,8 @@ class Pagenation {
   constructor(htmls) {
     this.el = document.createElement("div");
     this.el.style.display = "grid";
-    this.el.style.gridTemplateAreas = '"body body body" "prev counter next"';
+    this.el.style.gridTemplateAreas = '"prev body next" "counter counter counter"';
+    this.el.style.gridTemplateColumns = "20px auto 20px";
     this.page = 0;
     this.htmls = [];
     document.body.appendChild(this.el);
