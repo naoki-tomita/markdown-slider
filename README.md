@@ -6,7 +6,7 @@ a realtime previewable markdown slideshow app.
 
 * exec command.
     ```sh
-    # yarn start
+    > yarn start
     ```
 * access to `http://localhost:8080/index.html`
 * edit `/docs/example.md` and save.
